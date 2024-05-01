@@ -63,15 +63,13 @@ impl From<MenuItem> for usize {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-let db_path: &str = &format!("{:}/.gnostr/data/db.json",get_my_home().unwrap().unwrap().display());
-add_random_pet_to_db(db_path);
+    enable_raw_mode().expect("can run in raw mode");
 
-print!("{}",db_path);
-
-
-//process::exit(0);
-    //enable_raw_mode().expect("can run in raw mode");
-
+    let db_path: &str = &format!(
+        "{:}/.gnostr/data/db.json",
+        get_my_home().unwrap().unwrap().display()
+    );
+    let _ = add_random_pet_to_db(db_path);
     let (tx, rx) = mpsc::channel();
     let tick_rate = Duration::from_millis(200);
     thread::spawn(move || {
@@ -165,7 +163,7 @@ print!("{}",db_path);
                             [Constraint::Percentage(20), Constraint::Percentage(80)].as_ref(),
                         )
                         .split(chunks[1]);
-                    let (left, right) = render_pets(db_path,&pet_list_state);
+                    let (left, right) = render_pets(db_path, &pet_list_state);
                     rect.render_stateful_widget(left, pets_chunks[0], &mut pet_list_state);
                     rect.render_widget(right, pets_chunks[1]);
                 }
@@ -186,7 +184,7 @@ print!("{}",db_path);
                     add_random_pet_to_db(db_path).expect("can add new random pet");
                 }
                 KeyCode::Char('d') => {
-                    remove_pet_at_index(db_path,&mut pet_list_state).expect("can remove pet");
+                    remove_pet_at_index(db_path, &mut pet_list_state).expect("can remove pet");
                 }
                 KeyCode::Down => {
                     if let Some(selected) = pet_list_state.selected() {
@@ -242,7 +240,7 @@ fn render_home<'a>() -> Paragraph<'a> {
     home
 }
 
-fn render_pets<'a>(db_path: &str,pet_list_state: &ListState) -> (List<'a>, Table<'a>) {
+fn render_pets<'a>(db_path: &str, pet_list_state: &ListState) -> (List<'a>, Table<'a>) {
     let pets = Block::default()
         .borders(Borders::ALL)
         .style(Style::default().fg(Color::White))
@@ -324,17 +322,15 @@ fn render_pets<'a>(db_path: &str,pet_list_state: &ListState) -> (List<'a>, Table
 }
 
 fn read_db(db_path: &str) -> Result<Vec<Pet>, Error> {
-//example record
-//[{"id":2302274,"name":"CFyb5yKDhj","category":"cats","age":4,"created_at":"2024-05-01T20:50:37.929101Z"}]
     let db_content = fs::read_to_string(db_path)?;
-    if db_content.len() < 5 {
-    process::exit(0);
-}
+    if db_content.len() < 3 {
+        let _ = add_random_pet_to_db(db_path);
+    }
     let parsed: Vec<Pet> = serde_json::from_str(&db_content)?;
     Ok(parsed)
 }
 
-fn add_random_pet_to_db(db_path:&str) -> Result<Vec<Pet>, Error> {
+fn add_random_pet_to_db(db_path: &str) -> Result<Vec<Pet>, Error> {
     let mut rng = rand::thread_rng();
     let db_content = fs::read_to_string(db_path)?;
     let mut parsed: Vec<Pet> = serde_json::from_str(&db_content)?;
@@ -356,7 +352,7 @@ fn add_random_pet_to_db(db_path:&str) -> Result<Vec<Pet>, Error> {
     Ok(parsed)
 }
 
-fn remove_pet_at_index(db_path: &str,pet_list_state: &mut ListState) -> Result<(), Error> {
+fn remove_pet_at_index(db_path: &str, pet_list_state: &mut ListState) -> Result<(), Error> {
     if let Some(selected) = pet_list_state.selected() {
         let db_content = fs::read_to_string(db_path)?;
         let mut parsed: Vec<Pet> = serde_json::from_str(&db_content)?;
