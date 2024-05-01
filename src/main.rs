@@ -212,6 +212,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    clearscreen::clear().expect("failed to clear screen");
     Ok(())
 }
 

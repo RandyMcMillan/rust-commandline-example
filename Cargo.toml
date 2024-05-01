@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
+clearscreen = "3.0.0"
 crossterm = { version = "0.19", features = [ "serde" ] }
 homedir = "0.2.1"
 rand = { version = "0.7.3", default-features = false, features = ["std"] }
