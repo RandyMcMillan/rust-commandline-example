@@ -24,6 +24,13 @@ use tui::{
 };
 
 use homedir::get_my_home;
+const APP_NAME:&str = env!("CARGO_PKG_NAME");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+const ICON_FONT_SIZE: u16 = 12;
+const DB_PATH: &str = "./data/db.json";
+
+const INDIGO: Color = Color::Rgb(182, 46, 209);
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -98,11 +105,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut terminal = Terminal::new(backend)?;
     terminal.clear()?;
 
-    let menu_titles = vec!["Home", "Pets", "Add", "Delete", "Quit"];
+
+    //MENU TITLES
+
+    let menu_titles = vec!["Home", "Relays", "Add", "Delete", "Quit"];
     let mut active_menu_item = MenuItem::Home;
     let mut pet_list_state = ListState::default();
     pet_list_state.select(Some(0));
 
+    //LOOP
     loop {
         terminal.draw(|rect| {
             let size = rect.size();
@@ -119,14 +130,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 )
                 .split(size);
 
-            let copyright = Paragraph::new("pet-CLI 2020 - all rights reserved")
+            let copyright = Paragraph::new(format!(" {} FOOTER",APP_NAME))
                 .style(Style::default().fg(Color::LightCyan))
-                .alignment(Alignment::Center)
+                .alignment(Alignment::Left)
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
                         .style(Style::default().fg(Color::White))
-                        .title("Copyright")
+                        .title(format!(" {} v{}",APP_NAME,VERSION))
                         .border_type(BorderType::Plain),
                 );
 
@@ -166,20 +177,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let (left, right) = render_pets(db_path, &pet_list_state);
                     rect.render_stateful_widget(left, pets_chunks[0], &mut pet_list_state);
                     rect.render_widget(right, pets_chunks[1]);
+
+                    //footer not persist after quit here
+                    rect.render_widget(copyright.clone(), chunks[2]);
+
                 }
             }
-            rect.render_widget(copyright, chunks[2]);
         })?;
 
         match rx.recv()? {
             Event::Input(event) => match event.code {
                 KeyCode::Char('q') => {
                     disable_raw_mode()?;
+                    //terminal.clear()?;
+                    render_home();
                     terminal.show_cursor()?;
                     break;
                 }
                 KeyCode::Char('h') => active_menu_item = MenuItem::Home,
-                KeyCode::Char('p') => active_menu_item = MenuItem::Pets,
+                KeyCode::Char('r') => active_menu_item = MenuItem::Pets,
                 KeyCode::Char('a') => {
                     add_random_pet_to_db(db_path).expect("can add new random pet");
                 }
@@ -218,24 +234,148 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 fn render_home<'a>() -> Paragraph<'a> {
     let home = Paragraph::new(vec![
-        Spans::from(vec![Span::raw("")]),
-        Spans::from(vec![Span::raw("Welcome")]),
-        Spans::from(vec![Span::raw("")]),
-        Spans::from(vec![Span::raw("to")]),
-        Spans::from(vec![Span::raw("")]),
+
+//REF: Unicode Character “█” (U+2588)
+
+//center line
+//Spans::from(vec![Span::raw("
+//███████████████████████████████████████•███████████████████████████████████████
+//")]),
+Spans::from(vec![Span::raw("")]),
+Spans::from(vec![Span::raw("")]),
+Spans::from(vec![Span::raw("")]),
+Spans::from(vec![Span::raw("
+ █•█ ")]),
+Spans::from(vec![Span::raw("
+ ███•███ ")]),
+Spans::from(vec![Span::raw("
+ █████•█████ ")]),
+Spans::from(vec![Span::raw("
+ ███████•███████ ")]),
+Spans::from(vec![Span::raw("
+ █████████•█████████ ")]),
+Spans::from(vec![Span::raw("
+   ██████████•███████████ ")]),
+Spans::from(vec![Span::raw("
+█    ████████•█████████████")]),
+Spans::from(vec![Span::raw("
+ ████     ██████•███████████████")]),
+Spans::from(vec![Span::raw("
+ ████████      ███•█████████████████")]),
+Spans::from(vec![Span::raw("
+ ████████████      █•███████████████████")]),
+Spans::from(vec![Span::raw("
+  ████████████████         ██████████████████  ")]),
+Spans::from(vec![Span::raw("
+██████████████████           ██████████████████
+")]),
+Spans::from(vec![Span::raw("
+███████████████████             ███████████████████
+")]),
+Spans::from(vec![Span::raw("
+█████████████████████             █████████████████████
+")]),
+Spans::from(vec![Span::raw("
+████████████████████████           ████████████████████████
+")]),
+Spans::from(vec![Span::raw("
+ ████████████████████████████           ████████████████████████
+")]),
+Spans::from(vec![Span::raw("
+███████████████████████████████     █      ████████████████████████
+")]),
+Spans::from(vec![Span::raw("
+ ██████████████████████████████████     ███        ██████████████████████  ")]),
+Spans::from(vec![Span::raw("
+████████████████████████████████████     █████          ████████████████████")]),
+Spans::from(vec![Span::raw("
+█████████████████████████████████████     ███████           ██████████████████
+")]),
+//vim command to find center
+//:exe 'normal '.(virtcol('$')/2).'|'
+// █
+// ▉ ▊ ▋ ▌ ▍ ▎ ▏ ▐ ▔ ▕ ▀ ▁ ▂ ▃ ▄ ▅ ▆ ▇ █ ▉ ▊ ▋ ▌ ▍ ▎ ▏ ▐ ▔ ▕
+// █
+// █
+//FULL BLOCK
+//Unicode: U+2588, UTF-8: E2 96 88
+
+//center line
+Spans::from(vec![Span::raw("
+█████████████████████████████████████  •  ███████            █████████████████
+")]),
+
+Spans::from(vec![Span::raw("
+████████████████████████████████████     ████████           ████████████████
+")]),
+Spans::from(vec![Span::raw("
+██████████████████████████████████     ██████████        ███████████████
+")]),
+Spans::from(vec![Span::raw("
+████████████████████████████████     ███████████████████████████████")]),
+Spans::from(vec![Span::raw("
+███████████████████████████████     ██████████████████████████████
+")]),
+Spans::from(vec![Span::raw("
+█████████████████████████████     ████████████████████████████
+")]),
+Spans::from(vec![Span::raw("
+██████████████████████████       █████████████████████████
+")]),
+Spans::from(vec![Span::raw("
+██████████████████████           █████████████████████
+")]),
+Spans::from(vec![Span::raw("
+███████████████████             ██████████████████
+")]),
+Spans::from(vec![Span::raw("
+█████████████████             ████████████████
+")]),
+Spans::from(vec![Span::raw("
+████████████████           ███████████████
+")]),
+Spans::from(vec![Span::raw("
+████████████████       ███████████████")]),
+Spans::from(vec![Span::raw("
+ ████████████████•████████████████ ")]),
+Spans::from(vec![Span::raw("
+ ██████████████•██████████████ ")]),
+Spans::from(vec![Span::raw("
+ ████████████•████████████ ")]),
+Spans::from(vec![Span::raw("
+ █████████•█████████ ")]),
+Spans::from(vec![Span::raw("
+ ███████•███████ ")]),
+Spans::from(vec![Span::raw("
+ █████•█████ ")]),
+Spans::from(vec![Span::raw("
+ ███•███ ")]),
+Spans::from(vec![Span::raw("
+ █•█ ")]),
+//center line
+//Spans::from(vec![Span::raw("
+//███████████████████████████████████████•███████████████████████████████████████
+//")]),
+
+
         Spans::from(vec![Span::styled(
-            "pet-CLI",
+            "    ",
             Style::default().fg(Color::LightBlue),
         )]),
         Spans::from(vec![Span::raw("")]),
-        Spans::from(vec![Span::raw("Press 'p' to access pets, 'a' to add random new pets and 'd' to delete the currently selected pet.")]),
+        //Spans::from(vec![Span::raw("Press 'p' to access pets, 'a' to add random new pets and 'd' to delete the currently selected pet.")]),
     ])
     .alignment(Alignment::Center)
     .block(
         Block::default()
             .borders(Borders::ALL)
+            //.style(Style::default().fg(Color::Magenta))
+            //.style(Style::default().fg(Color::Black))
             .style(Style::default().fg(Color::White))
-            .title("Home")
+            //.style(Style::default().fg(Color::Rgb(100,1,1)))
+            //.style(Style::default().fg(Color::Rgb(255,1,1)))
+            //TODO git repo
+            .title("  gnostr  ")
             .border_type(BorderType::Plain),
     );
     home
@@ -245,7 +385,7 @@ fn render_pets<'a>(db_path: &str, pet_list_state: &ListState) -> (List<'a>, Tabl
     let pets = Block::default()
         .borders(Borders::ALL)
         .style(Style::default().fg(Color::White))
-        .title("Pets")
+        .title("Relays")
         .border_type(BorderType::Plain);
 
     let pet_list = read_db(db_path).expect("can fetch pet list");
